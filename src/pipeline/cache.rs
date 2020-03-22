@@ -32,25 +32,23 @@ impl Cache {
         size: [u16; 2],
         data: &[u8],
     ) {
-        let buffer = device
-            .create_buffer_mapped(data.len(), wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(data);
+        let buffer = device.create_buffer_with_data(data, wgpu::BufferUsage::COPY_SRC);
 
         encoder.copy_buffer_to_texture(
             wgpu::BufferCopyView {
                 buffer: &buffer,
                 offset: 0,
-                row_pitch: size[0] as u32,
-                image_height: size[1] as u32,
+                bytes_per_row: size[0] as u32,
+                rows_per_image: size[1] as u32,
             },
             wgpu::TextureCopyView {
                 texture: &self.texture,
                 array_layer: 0,
                 mip_level: 0,
                 origin: wgpu::Origin3d {
-                    x: offset[0] as f32,
-                    y: offset[1] as f32,
-                    z: 0.0,
+                    x: offset[0] as u32,
+                    y: offset[1] as u32,
+                    z: 0,
                 },
             },
             wgpu::Extent3d {

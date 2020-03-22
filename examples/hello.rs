@@ -1,22 +1,28 @@
 use wgpu_glyph::{GlyphBrushBuilder, Scale, Section};
 
-fn main() -> Result<(), String> {
+fn main() {
+    futures::executor::block_on(run()).unwrap();
+}
+
+async fn run() -> Result<(), String> {
     env_logger::init();
 
     // Initialize GPU
-    let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::HighPerformance,
-        backends: wgpu::BackendBit::all(),
-    })
-    .expect("Request adapter");
+    let adapter = wgpu::Adapter::request(
+        &wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::HighPerformance,
+        },
+        wgpu::BackendBit::all(),
+    )
+    .await;
 
-    let (mut device, mut queue) =
-        adapter.request_device(&wgpu::DeviceDescriptor {
+    let (mut device, queue) =
+        adapter.unwrap().request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions {
                 anisotropic_filtering: false,
             },
             limits: wgpu::Limits { max_bind_groups: 1 },
-        });
+        }).await;
 
     // Open window and create a surface
     let event_loop = winit::event_loop::EventLoop::new();
@@ -39,7 +45,7 @@ fn main() -> Result<(), String> {
             format: render_format,
             width: size.width,
             height: size.height,
-            present_mode: wgpu::PresentMode::Vsync,
+            present_mode: wgpu::PresentMode::Mailbox,
         },
     );
 
@@ -71,7 +77,7 @@ fn main() -> Result<(), String> {
                         format: render_format,
                         width: size.width,
                         height: size.height,
-                        present_mode: wgpu::PresentMode::Vsync,
+                        present_mode: wgpu::PresentMode::Mailbox,
                     },
                 );
             }
@@ -82,7 +88,7 @@ fn main() -> Result<(), String> {
                 );
 
                 // Get the next frame
-                let frame = swap_chain.get_next_texture();
+                let frame = swap_chain.get_next_texture().unwrap();
 
                 // Clear frame
                 {
