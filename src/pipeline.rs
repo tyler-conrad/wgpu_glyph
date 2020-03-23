@@ -217,6 +217,7 @@ fn build<D>(
                     ty: wgpu::BindingType::SampledTexture {
                         multisampled: false,
                         dimension: wgpu::TextureViewDimension::D2,
+                        component_type: wgpu::TextureComponentType::Float,
                     },
                 },
             ],
